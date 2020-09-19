@@ -1,7 +1,9 @@
+import random
 from array import array
-from random import randint, random
 
 from deap import base, creator, tools
+
+random.seed(0)
 
 
 def evalOneMax(individual):
@@ -13,7 +15,7 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 
 toolbox = base.Toolbox()
 # Attribute generator
-toolbox.register("attr_bool", randint, 0, 1)
+toolbox.register("attr_bool", random.randint, 0, 1)
 # Structure initializers
 toolbox.register(
     "individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 100
@@ -27,7 +29,7 @@ toolbox.register("select", tools.selTournament, tournsize=3)
 
 
 def main():
-    pop = toolbox.population(n=300)
+    pop = toolbox.population(n=100)
     # Evaluate the entire population
     fitnesses = list(map(toolbox.evaluate, pop))
     for ind, fit in zip(pop, fitnesses):
@@ -57,13 +59,13 @@ def main():
 
         # Apply crossover and mutation on the offspring
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
-            if random() < CXPB:
+            if random.random() < CXPB:
                 toolbox.mate(child1, child2)
                 del child1.fitness.values
                 del child2.fitness.values
 
         for mutant in offspring:
-            if random() < MUTPB:
+            if random.random() < MUTPB:
                 toolbox.mutate(mutant)
                 del mutant.fitness.values
 
