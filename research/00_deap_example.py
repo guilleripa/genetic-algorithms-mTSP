@@ -5,7 +5,7 @@ from deap import base, creator, tools
 
 
 def evalOneMax(individual):
-    return sum(individual)
+    return (sum(individual),)
 
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -13,7 +13,7 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 
 toolbox = base.Toolbox()
 # Attribute generator
-toolbox.register("attr_bool", randint, 0, 10)
+toolbox.register("attr_bool", randint, 0, 1)
 # Structure initializers
 toolbox.register(
     "individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, 100
