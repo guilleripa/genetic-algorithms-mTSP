@@ -79,3 +79,25 @@ def part_two_edit(func, part_one_len):
         return ind1, ind2
 
     return apply_part_two
+
+
+#
+# Mutation operators
+#
+
+
+def swap_op(ind):
+    # Swap two genes of the individual.
+    idx1 = random.randint(0, len(ind))
+    idx2 = random.randint(0, len(ind))
+    ind[idx1], ind[idx2] = ind[idx2], ind[idx1]
+    return ind
+
+
+def inc_dec(ind):
+    # Sums one to a gene and substracts one to other.
+    inc_idx = random.randint(0, len(ind))
+    dec_idx = random.randint(0, len(ind))
+    ind[inc_idx] += 1
+    ind[dec_idx] -= 1
+    return ind
