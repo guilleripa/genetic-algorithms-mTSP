@@ -42,15 +42,20 @@ def validate_capacities(individual, store_count, instance):
     return True
 
 
-def init_iterate_and_distribute(container, instance):
+def init_iterate_and_distribute(container, instance=None):
+    if not instance:
+        raise ValueError("`instance` cannot be None.")
+
     store_count, vehicle_count = len(instance["stores"]) - 1, len(instance["vehicles"])
 
     # routes
-    individual = random.sample(range(store_count), store_count)
+    individual = random.sample(range(1, store_count + 1), store_count)
     # route assignment
     individual.extend(sorted(random.choices(range(store_count), k=vehicle_count - 1)))
 
-    assert validate_capacities(individual, store_count, instance)
+    assert validate_capacities(
+        individual, store_count, instance
+    ), "A vehicle has more demand than capacity."
     return container(individual)
 
 
