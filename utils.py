@@ -2,6 +2,9 @@ import logging
 import math
 import random
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 logger = logging.getLogger("Toolbox")
 
 #
@@ -138,3 +141,40 @@ def eval_routes(individual, instance=None):
         route_start_idx = route_finish_idx
 
     return (cost,)
+
+
+#
+# Drawing tools
+#
+
+
+def draw_individual(ind, stores):
+    num_stores = len(stores)
+    fig, ax = plt.subplots(2, sharex=True, sharey=True)  # Prepare 2 plots
+    ax[0].set_title("Raw nodes")
+    ax[1].set_title("Optimized tours")
+    start = 0
+    for i, finish in enumerate(np.append(ind[num_stores:], num_stores)):
+        ind_slice = ind[start:finish]
+        store_slice = stores[ind_slice]
+        res = ax[0].scatter(store_slice[:, 0], store_slice[:, 1])  # plot A
+        ax[1].scatter(store_slice[:, 0], store_slice[:, 1])  # plot B
+        for j in range(len(ind_slice)):
+            start_node = ind_slice[j]
+            start_pos = stores[start_node]
+            next_node = ind_slice[(j + 1) % len(ind_slice)]
+            end_pos = stores[next_node]
+            ax[1].annotate(
+                "",
+                xy=start_pos,
+                xycoords="data",
+                xytext=end_pos,
+                textcoords="data",
+                arrowprops=dict(
+                    arrowstyle="->", connectionstyle="arc3", color=res.get_facecolors()[0]
+                ),
+            )
+        start = finish
+
+    plt.tight_layout()
+    plt.show()
