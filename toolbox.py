@@ -5,57 +5,51 @@ import numpy as np
 
 logger = logging.getLogger("Toolbox")
 
+#
+# mTSP specific initializer
+#
 
-def valid_route_capacity(route, vehicle_idx, instances):
+
+def valid_route_capacity(route, vehicle_idx, instance):
     """
     Given a route and a vehicle we check that the vehicle can fulfill the route's demand.
     """
-    # we are assuming
-    # instances ~= {
-    # 'vehicles': [[driver_rate, vehicle_capacity]],
-    # 'stores': [[..., store_demand]]
-    # }
-    max_capacity = instances["vehicles"][vehicle_idx][-1]
-    current_capacity = 0
+    max_demand = instance["vehicles"][vehicle_idx]["capacity"]
+    route_demand = 0
     for store in route:
-        current_capacity += instances["stores"][store][-1]
-        if current_capacity > max_capacity:
+        route_demand += instance["stores"][store]["demand"]
+        if route_demand > max_demand:
             return False
     return True
 
 
-def validate_capacities(genome, store_count, instances):
+def validate_capacities(individual, store_count, instance):
     # TODO: si vemos que falla en alguna implementamos esto:
-    # Queremos recorrer el genoma e ir llevando la carga total de cada vehículo.
+    # Queremos recorrer al individuo e ir llevando la carga total de cada vehículo.
     # Si vemos que alcanza, está todo bien y seguimos, sino, cortamos ahí y le pasamos las tiendas restantes al siguiente camión.
     # Si el último camión tiene tiendas sobrantes, entonces movemos la parte 1 para darle esas al primer camión y volvermos a arrancar.
 
-    routes, route_counts = genome[:store_count], genome[store_count:]
-    start = 0
-    for vehicle_idx, route_count in enumerate(route_counts):
-        # we are assuming instances ~= {'vehicles': [[driver_rate, vehicle_capacity]]}
-        route = routes[start : start + route_count]
-        if not valid_route_capacity(route, vehicle_idx, instances):
+    routes, route_idxs = individual[:store_count], individual[store_count:]
+    route_start_idx = 0
+    for vehicle_idx, route_finish_idx in enumerate(route_idxs + [store_count]):
+        if not valid_route_capacity(
+            routes[route_start_idx:route_finish_idx], vehicle_idx, instance
+        ):
             return False
-        start += route_count
-
-    route = routes[start:]
-    return valid_route_capacity(route, len(route_counts), instances)
+        route_start_idx += route_finish_idx
+    return True
 
 
-def initIterateAndDistribute(container, store_count, vehicle_count, instances):
-    routes = random.sample(range(store_count), store_count)
+def initIterateAndDistribute(container, instance):
+    store_count, vehicle_count = len(instance["stores"]), len(instance["vehicles"])
 
-    # The store_count will be the total sum to keep, then we distribute it between vehicles.
-    # Finally we remove the last one to keep solution consistency.
-    route_counts = np.random.multinomial(
-        store_count, np.ones(vehicle_count) / vehicle_count, size=1
-    )[0][:-1]
+    # routes
+    individual = random.sample(range(store_count), store_count)
+    # route assignment
+    individual.extend(sorted(random.choices(range(store_count), k=vehicle_count - 1)))
 
-    routes.extend(route_counts)
-
-    assert validate_capacities(routes, store_count, instances)
-    return container(routes)
+    assert validate_capacities(individual, store_count, instance)
+    return container(individual)
 
 
 #
