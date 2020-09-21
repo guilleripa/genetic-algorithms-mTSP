@@ -39,8 +39,8 @@ def validate_capacities(individual, store_count, instance):
     return True
 
 
-def initIterateAndDistribute(container, instance):
-    store_count, vehicle_count = len(instance["stores"]), len(instance["vehicles"])
+def init_iterate_and_distribute(container, instance):
+    store_count, vehicle_count = len(instance["stores"]) - 1, len(instance["vehicles"])
 
     # routes
     individual = random.sample(range(store_count), store_count)
@@ -113,11 +113,10 @@ def eval_route(route, v_idx, instance):
         store = instance["stores"][store_idx]
         t += calculate_distance(*prev_store["position"], *store["position"])
 
-        ready_time, due_date = store[2]
-        service_time = store[-1]
+        ready_time, due_date = store["window"]
         if t < ready_time:
             t = ready_time
-        t += service_time
+        t += store["service_time"]
         cost += abs(t - due_date)
 
         prev_store = store
@@ -129,7 +128,7 @@ def eval_routes(individual, instance=None):
     if not instance:
         raise ValueError("`instance` cannot be None.")
 
-    store_count = len(instance["stores"])
+    store_count = len(instance["stores"]) - 1
     routes, route_idxs = individual[:store_count], individual[store_count:]
 
     cost = 0
