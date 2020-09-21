@@ -1,7 +1,6 @@
 import logging
+import math
 import random
-
-import numpy as np
 
 logger = logging.getLogger("Toolbox")
 
@@ -95,3 +94,48 @@ def inc_dec(ind):
     ind[inc_idx] += 1
     ind[dec_idx] -= 1
     return ind
+
+
+#
+# Evaluation function
+#
+
+
+def calculate_distance(x1, y1, x2, y2):
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+
+def eval_route(route, v_idx, instance):
+    t = cost = 0
+
+    prev_store = instance["stores"][0]
+    for store_idx in route:
+        store = instance["stores"][store_idx]
+        t += calculate_distance(*prev_store["position"], *store["position"])
+
+        ready_time, due_date = store[2]
+        service_time = store[-1]
+        if t < ready_time:
+            t = ready_time
+        t += service_time
+        cost += abs(t - due_date)
+
+        prev_store = store
+
+    return cost + t * instance["vehicles"][v_idx]["rate"]
+
+
+def eval_routes(individual, instance=None):
+    if not instance:
+        raise ValueError("`instance` cannot be None.")
+
+    store_count = len(instance["stores"])
+    routes, route_idxs = individual[:store_count], individual[store_count:]
+
+    cost = 0
+    route_start_idx = 0
+    for v_idx, route_finish_idx in enumerate(route_idxs + [store_count]):
+        cost += eval_route(routes[route_start_idx:route_finish_idx], v_idx, instance)
+        route_start_idx = route_finish_idx
+
+    return (cost,)
