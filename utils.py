@@ -2,8 +2,9 @@ import logging
 import math
 import random
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib.pyplot as plt
 
 logger = logging.getLogger("Toolbox")
 
@@ -129,6 +130,8 @@ def eval_route(route, v_idx, instance):
 
         prev_store = store
 
+    # Add return to deposit time
+    t += calculate_distance(*prev_store["position"], *instance["stores"][0]["position"])
     return cost + t * instance["vehicles"][v_idx]["rate"]
 
 
@@ -176,7 +179,9 @@ def draw_individual(ind, stores):
                 xytext=end_pos,
                 textcoords="data",
                 arrowprops=dict(
-                    arrowstyle="->", connectionstyle="arc3", color=res.get_facecolors()[0]
+                    arrowstyle="->",
+                    connectionstyle="arc3",
+                    color=res.get_facecolors()[0],
                 ),
             )
         start = finish
