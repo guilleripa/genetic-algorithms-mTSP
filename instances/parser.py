@@ -1,34 +1,53 @@
-VEHICLES = {
-C1 - 25 200 1.0
-C2 - 25 700 1.0
-R1 - 25 200 1.0
-R2 - 25 1000 1.0
-RC1 - 25 200 1.0
-RC2 - 25 1000 1.0
-
-HC1
-A 20 100 1.0
-B 5 200 1.2
-
-HC2
-A 20 400 1.0
-B 5 500 1.2
-
-HR1
-A 10 50 1.0
-B 15 80 1.2
-C 10 120 1.4
-
-HR2
-A 10 300 1.0
-B 5 400 1.2
-
-HRC1
-A 10 40 1.0
-B 20 80 1.2
-C 10 150 1.4
-
-HRC2
-A 10 100 1.0
-B 5 200 1.2
+HOMO_VEHICLES = {
+    "C1": [{"count": 25, "capacity": 200, "rate": 1.0}],
+    "C2": [{"count": 25, "capacity": 700, "rate": 1.0}],
+    "R1": [{"count": 25, "capacity": 200, "rate": 1.0}],
+    "R2": [{"count": 25, "capacity": 1000, "rate": 1.0}],
+    "RC1": [{"count": 25, "capacity": 200, "rate": 1.0}],
+    "RC2": [{"count": 25, "capacity": 1000, "rate": 1.0}],
 }
+
+HETERO_VEHICLES = {
+    "C1": [
+        {"count": 20, "capacity": 100, "rate": 1.0},
+        {"count": 5, "capacity": 200, "rate": 1.2},
+    ],
+    "C2": [
+        {"count": 20, "capacity": 400, "rate": 1.0},
+        {"count": 5, "capacity": 500, "rate": 1.2},
+    ],
+    "R1": [
+        {"count": 10, "capacity": 50, "rate": 1.0},
+        {"count": 15, "capacity": 80, "rate": 1.2},
+        {"count": 10, "capacity": 120, "rate": 1.4},
+    ],
+    "R2": [
+        {"count": 10, "capacity": 300, "rate": 1.0},
+        {"count": 5, "capacity": 400, "rate": 1.2},
+    ],
+    "RC1": [
+        {"count": 10, "capacity": 40, "rate": 1.0},
+        {"count": 20, "capacity": 80, "rate": 1.2},
+        {"count": 10, "capacity": 150, "rate": 1.4},
+    ],
+    "RC2": [
+        {"count": 10, "capacity": 100, "rate": 1.0},
+        {"count": 5, "capacity": 200, "rate": 1.2},
+    ],
+}
+
+
+class Instancer:
+    def __init__(self, instance_type, homogeneous_vehicles=True):
+        self.stores = self.load_stores(instance_type)
+        vehicles_types = HOMO_VEHICLES if homogeneous_vehicles else HETERO_VEHICLES
+        self.vehicles = vehicles_types[instance_type]
+
+    def load_stores(self, instance_type):
+        pass
+
+    def types2list(self):
+        pass
+
+    def get_instance_dict(self):
+        return {"stores": self.stores, "vehicles": self.types2list()}
