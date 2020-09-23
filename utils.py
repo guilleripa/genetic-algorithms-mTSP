@@ -66,19 +66,23 @@ def init_iterate_and_distribute(container, instance=None):
 
 
 def part_one_edit(func, part_one_len):
-    def apply_part_one(ind1, ind2):
-        part1 = slice(part_one_len - 1)
-        ind1[part1], ind2[part1] = func(ind1[part1], ind2[part1])
-        return ind1, ind2
+    def apply_part_one(*args):
+        part1 = slice(part_one_len)
+        parts = [ind[part1] for ind in args]
+        for updated, original in zip(func(*parts), args):
+            original[part1] = updated
+        return args
 
     return apply_part_one
 
 
 def part_two_edit(func, part_one_len):
-    def apply_part_two(ind1, ind2):
-        part2 = slice(part_one_len, len(ind1))
-        ind1[part2], ind2[part2] = func(ind1[part2], ind2[part2])
-        return ind1, ind2
+    def apply_part_two(*args):
+        part2 = slice(part_one_len, None)
+        parts = [ind[part2] for ind in args]
+        for updated, original in zip(func(*parts), args):
+            original[part2] = updated
+        return args
 
     return apply_part_two
 
