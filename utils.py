@@ -94,18 +94,35 @@ def part_two_edit(func, part_one_len):
 
 def swap_op(ind):
     # Swap two genes of the individual.
-    idx1 = random.randint(0, len(ind))
-    idx2 = random.randint(0, len(ind))
+    idx1 = random.randint(0, len(ind) - 1)
+    idx2 = random.randint(0, len(ind) - 1)
     ind[idx1], ind[idx2] = ind[idx2], ind[idx1]
-    return ind
+    return (ind,)
 
 
-def inc_dec(ind):
+def inc_op(ind, max_value):
     # Sums one to a gene and substracts one to other.
-    inc_idx = random.randint(0, len(ind))
-    dec_idx = random.randint(0, len(ind))
-    ind[inc_idx] += 1
-    ind[dec_idx] -= 1
+    inc_idx = random.randint(0, len(ind) - 1)
+
+    if ind[inc_idx] + 1 <= max_value and (
+        inc_idx == len(ind) - 1 or ind[inc_idx] < ind[inc_idx + 1]
+    ):
+        ind[inc_idx] += 1
+    return (ind,)
+
+
+def dec_op(ind):
+    # Sums one to a gene and substracts one to other.
+    dec_idx = random.randint(0, len(ind) - 1)
+    if ind[dec_idx] - 1 >= 0 and (dec_idx == 0 or ind[dec_idx - 1] <= ind[dec_idx]):
+        ind[dec_idx] -= 1
+    return (ind,)
+
+
+def regenerate_op(ind, max_value):
+    ind_len = len(ind)
+    ind = random.sample(range(max_value), ind_len)
+    ind.sort()
     return ind
 
 
