@@ -1,35 +1,23 @@
 import random
+from functools import partial
 
 from deap import base, creator, tools
 
+from instances.parser import Instancer
 from utils import (
+    dec_op,
     eval_routes,
-    inc_dec,
+    inc_op,
     init_iterate_and_distribute,
     part_one_edit,
     part_two_edit,
+    regenerate_op,
     swap_op,
 )
 
 random.seed(0)
 
-current_instance = {
-    "stores": [
-        {
-            "position": (35.00, 35.00),
-            "demand": 0.00,
-            "window": (0.00, 230.00),
-            "service_time": 0.00,
-        },
-        {
-            "position": (41.00, 49.00),
-            "demand": 10.00,
-            "window": (161.00, 171.00),
-            "service_time": 10.00,
-        },
-    ],
-    "vehicles": [{"rate": 1.0, "capacity": 20}],
-}
+current_instance = Instancer("C109").get_instance_dict()
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -46,19 +34,16 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
 toolbox.register("evaluate", eval_routes, instance=current_instance)
 # # TODO: add cx fns.
-# toolbox.register("mate_1", part_one_edit())
-# toolbox.register("mate_2", part_two_edit())
+toolbox.register("mate_1", part_one_edit(tools.cxPartialyMatched, len(current_instance["stores"])))
 # # TODO: add mutation fns.
-# # toolbox.register("mutate_1", tools.mutFlipBit, indpb=0.05)
-# toolbox.register(
-#     "mutate_swap1", part_one_edit(swap_op, len(current_instance["stores"]))
-# )
-# toolbox.register(
-#     "mutate_inc_dec1", part_one_edit(inc_dec, len(current_instance["stores"]))
-# )
-# toolbox.register(
-#     "mutate_inc_dec2", part_two_edit(inc_dec, len(current_instance["stores"]))
-# )
+# toolbox.register("mutate_1", tools.mutFlipBit, indpb=0.05)
+toolbox.register("mutate_swap", part_one_edit(swap_op, len(current_instance["stores"])))
+
+inc_op_w_max = partial(inc_op, len(current_instance["stores"]))
+
+toolbox.register("mutate_inc", part_two_edit(inc_op_w_max))
+toolbox.register("mutate_dec", part_two_edit(dec_op))
+
 toolbox.register("select", tools.selTournament, tournsize=3)
 
 
@@ -77,7 +62,7 @@ def main():
     #
     # MUTPB1 is the probability for mutating part 1 of an individual
     # MUTPB2 is the probability for mutating part 2 of an individual
-    CXPB1, CXPB2, MUTPB1, MUTPB2 = 0.5, 0.5, 0.2, 0.2
+    CXPB1, MUTPB1, MUTPB2 = 0.5, 0.2, 0.2
 
     # Extracting all the fitnesses of
     fits = [ind.fitness.values[0] for ind in pop]
@@ -96,29 +81,27 @@ def main():
         offspring = list(map(toolbox.clone, offspring))
 
         # # Apply crossover and mutation on the offspring
-        # for child1, child2 in zip(offspring[::2], offspring[1::2]):
-        #     if random.random() < CXPB1:
-        #         toolbox.mate_1(child1, child2)
-        #         if child1.fitness.values:
-        #             del child1.fitness.values
-        #         if child2.fitness.values:
-        #             del child2.fitness.values
-        #     if random.random() < CXPB2:
-        #         toolbox.mate_2(child1, child2)
-        #         if hasattr(child1.fitness, "values"):
-        #             del child1.fitness.values
-        #         if hasattr(child2.fitness, "values"):
-        #             del child2.fitness.values
+        for child1, child2 in zip(offspring[::2], offspring[1::2]):
+            if random.random() < CXPB1:
+                toolbox.mate_1(child1, child2)
+                if hasattr(child1.fitness, "values"):
+                    del child1.fitness.values
+                if hasattr(child2.fitness, "values"):
+                    del child2.fitness.values
 
-        # for mutant in offspring:
-        #     if random.random() < MUTPB1:
-        #         toolbox.mutate_swap1(mutant)
-        #         if hasattr(mutant.fitness, "values"):
-        #             del mutant.fitness.values
-        #     if random.random() < MUTPB2:
-        #         toolbox.mutate(mutant)
-        #         if hasattr(mutant.fitness, "values"):
-        #             del mutant.fitness.values
+        for mutant in offspring:
+            if random.random() < MUTPB1:
+                toolbox.mutate_swap(mutant)
+                if hasattr(mutant.fitness, "values"):
+                    del mutant.fitness.values
+            if random.random() < MUTPB2:
+                toolbox.mutate_inc(mutant)
+                if hasattr(mutant.fitness, "values"):
+                    del mutant.fitness.values
+            if random.random() < MUTPB2:
+                toolbox.mutate_dec(mutant)
+                if hasattr(mutant.fitness, "values"):
+                    del mutant.fitness.values
 
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]

@@ -2,9 +2,8 @@ import logging
 import math
 import random
 
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
 
 logger = logging.getLogger("Toolbox")
 
@@ -100,7 +99,7 @@ def swap_op(ind):
     return (ind,)
 
 
-def inc_op(ind, max_value):
+def inc_op(max_value, ind):
     # Sums one to a gene and substracts one to other.
     inc_idx = random.randint(0, len(ind) - 1)
 
