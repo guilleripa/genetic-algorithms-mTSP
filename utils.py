@@ -37,12 +37,44 @@ def validate_capacities(individual, store_count, instance):
         if not valid_route_capacity(
             routes[route_start_idx:route_finish_idx], vehicle_idx, instance
         ):
-            return False
+            return False, vehicle_idx, routes[route_start_idx:route_finish_idx]
         route_start_idx += route_finish_idx
-    return True
+    return True, None, None
 
 
-def init_iterate_and_distribute(container, instance=None):
+def part2_initializer(ind, instance, type="greedy"):
+    vehicle_count = len(instance["vehicles"])
+    if type == "uniform":
+        step = math.ceil(len(ind) / vehicle_count)
+        return [idx * step + step for idx in range(vehicle_count - 1)]
+    if type == "random_greedy":
+        route_idx = [0] * (vehicle_count - 1)
+        start_idx = random.choice(range(vehicle_count - 1))
+        # TODO: finish
+        return []
+    if type == "greedy":
+        route_idx = [0] * (vehicle_count - 1)
+        current_store_idx = 0
+        last_vehicle = None
+        for vehicle in range(vehicle_count - 1):
+            capacity = instance["vehicles"][vehicle]["capacity"]
+            demand = instance["stores"][current_store_idx]["demand"]
+            while current_store_idx < len(instance["stores"]) - 1 and capacity > demand:
+                current_store_idx += 1
+                if current_store_idx < len(instance["stores"]) - 1:
+                    demand += instance["stores"][current_store_idx + 1]["demand"]
+                else:
+                    last_vehicle = vehicle
+            route_idx[vehicle] = current_store_idx - 1
+            if last_vehicle:
+                break
+        # Fill the reamining vehicles with the last index
+        for vehicle in range(vehicle_count - 1)[last_vehicle:]:
+            route_idx[vehicle] = route_idx[last_vehicle]
+        return route_idx
+
+
+def init_iterate_and_distribute(container, instance=None, part2_type="greedy"):
     if not instance:
         raise ValueError("`instance` cannot be None.")
 
@@ -51,11 +83,25 @@ def init_iterate_and_distribute(container, instance=None):
     # routes
     individual = random.sample(range(1, store_count + 1), store_count)
     # route assignment
-    individual.extend(sorted(random.choices(range(store_count), k=vehicle_count - 1)))
+    # individual.extend(sorted(random.choices(range(store_count), k=vehicle_count - 1)))
+    route_idx = part2_initializer(individual, instance, type=part2_type)
+    individual.extend(route_idx)
 
-    assert validate_capacities(
-        individual, store_count, instance
-    ), "A vehicle has more demand than capacity."
+    valid, vehicle_idx, route = validate_capacities(individual, store_count, instance)
+    if route:
+        demands = [
+            store["demand"]
+            for idx, store in enumerate(instance["stores"])
+            if idx in route
+        ]
+    assert valid, (
+        "A vehicle has more demand than capacity.\n"
+        + str(instance["vehicles"][vehicle_idx])
+        + "\n"
+        + ", ".join(str(demand) for demand in demands)
+        + "\n"
+        + str(sum(demands))
+    )
     return container(individual)
 
 

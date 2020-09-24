@@ -6,7 +6,7 @@ setup(
     packages=find_packages(),
     description="Package to develop Genetic Algorithms 2020 Fing.",
     author="TheDuo",
-    install_requires=["deap", "numpy", "black", "isort", "matplotlib"],
+    install_requires=["deap", "numpy", "black", "isort", "matplotlib", "tqdm"],
     python_requires=">=3.7,<4.0",
     include_package_data=True,
 )

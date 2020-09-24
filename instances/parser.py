@@ -1,4 +1,5 @@
 from pathlib import Path
+from random import shuffle
 
 HOMO_VEHICLES = {
     "C1": [{"count": 25, "capacity": 200, "rate": 1.0}],
@@ -42,6 +43,12 @@ PARSE_MAPPING = {1: "position", 3: "demand", 4: "window", 6: "service_time"}
 
 class Instancer:
     def __init__(self, instance_type, homogeneous_vehicles=True):
+        self.config = (
+            instance_type,
+            "homogeneous_vehicles"
+            if homogeneous_vehicles
+            else "heterogeneous_vehicles",
+        )
         self.stores = self.load_stores(instance_type)
         vehicles_types = HOMO_VEHICLES if homogeneous_vehicles else HETERO_VEHICLES
         self.vehicles = vehicles_types[instance_type[:-2]]
@@ -89,4 +96,6 @@ class Instancer:
         return vehicles
 
     def get_instance_dict(self):
-        return {"stores": self.stores, "vehicles": self.types2list()}
+        route_idx = self.types2list()
+        shuffle(route_idx)
+        return {"stores": self.stores, "vehicles": route_idx}
