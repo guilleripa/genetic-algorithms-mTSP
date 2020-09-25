@@ -3,11 +3,12 @@ import time
 from datetime import datetime
 from functools import partial
 
+import click
 from deap import base, creator, tools
 from tqdm import tqdm
 
 from instances.parser import Instancer
-from utils import (
+from scripts.utils import (
     dec_op,
     eval_routes,
     inc_op,
@@ -20,42 +21,54 @@ from utils import (
 
 random.seed(0)
 
-current_instance = Instancer("RC102", homogeneous_vehicles=False)
-instance_dict = current_instance.get_instance_dict()
 
-creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMin)
+def create_toolbox(instance_type, heterogeneous_vehicles):
+    current_instance = Instancer(
+        instance_type, heterogeneous_vehicles=heterogeneous_vehicles
+    )
+    instance_dict = current_instance.get_instance_dict()
 
-toolbox = base.Toolbox()
-# Structure initializers
-toolbox.register(
-    "individual",
-    init_iterate_and_distribute,
-    creator.Individual,
-    instance=instance_dict,
-)
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+    creator.create("Individual", list, fitness=creator.FitnessMin)
 
-toolbox.register("evaluate", eval_routes, instance=instance_dict)
-# # TODO: add cx fns.
-toolbox.register(
-    "mate_1", part_one_edit(tools.cxPartialyMatched, len(instance_dict["stores"]))
-)
-# # TODO: add mutation fns.
-# toolbox.register("mutate_1", tools.mutFlipBit, indpb=0.05)
-toolbox.register("mutate_swap", part_one_edit(swap_op, len(instance_dict["stores"])))
+    toolbox = base.Toolbox()
+    # Structure initializers
+    toolbox.register(
+        "individual",
+        init_iterate_and_distribute,
+        creator.Individual,
+        instance=instance_dict,
+    )
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-inc_op_w_max = partial(inc_op, len(instance_dict["stores"]))
+    toolbox.register("evaluate", eval_routes, instance=instance_dict)
+    # # TODO: add cx fns.
+    toolbox.register(
+        "mate_1", part_one_edit(tools.cxPartialyMatched, len(instance_dict["stores"]))
+    )
+    # # TODO: add mutation fns.
+    # toolbox.register("mutate_1", tools.mutFlipBit, indpb=0.05)
+    toolbox.register(
+        "mutate_swap", part_one_edit(swap_op, len(instance_dict["stores"]))
+    )
 
-toolbox.register(
-    "mutate_inc", part_two_edit(inc_op_w_max, len(instance_dict["stores"]))
-)
-toolbox.register("mutate_dec", part_two_edit(dec_op, len(instance_dict["stores"])))
+    inc_op_w_max = partial(inc_op, len(instance_dict["stores"]))
 
-toolbox.register("select", tools.selTournament, tournsize=3)
+    toolbox.register(
+        "mutate_inc", part_two_edit(inc_op_w_max, len(instance_dict["stores"]))
+    )
+    toolbox.register("mutate_dec", part_two_edit(dec_op, len(instance_dict["stores"])))
+
+    toolbox.register("select", tools.selTournament, tournsize=3)
+
+    return toolbox, current_instance.config
 
 
-def main():
+@click.command()
+@click.option("--ins", required=True)
+@click.option("--h/--no-h", default=False)
+def main(ins, h):
+    toolbox, config = create_toolbox(ins, heterogeneous_vehicles=h)
     start = time.time()
     pop = toolbox.population(n=100)
 
@@ -66,16 +79,16 @@ def main():
 
     # CXPB1  is the probability with which part 1 of two individuals
     #        are crossed
-    # CXPB2  is the probability with which part 2 of two individuals
-    #        are crossed
     #
     # MUTPB1 is the probability for mutating part 1 of an individual
     # MUTPB2 is the probability for mutating part 2 of an individual
     output = []
-    with open(f"{datetime.now()}.txt", "w+") as f:
+    with open(
+        f"results/{config}_{datetime.now().strftime('%m_%d_%H%M%S')}.txt", "w+"
+    ) as f:
         CXPB1, MUTPB1, MUTPB2 = 0.5, 0.2, 0.2
         f.write(
-            f"instance={current_instance.config}, CXPB1={CXPB1}, MUTPB1={MUTPB1}, MUTPB2={MUTPB2} \n"
+            f"instance={config}, CXPB1={CXPB1}, MUTPB1={MUTPB1}, MUTPB2={MUTPB2} \n"
         )
         # Extracting all the fitnesses of
         fits = [ind.fitness.values[0] for ind in pop]
@@ -137,4 +150,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(["--ins", "C101"])

@@ -9,4 +9,8 @@ setup(
     install_requires=["deap", "numpy", "black", "isort", "matplotlib", "tqdm"],
     python_requires=">=3.7,<4.0",
     include_package_data=True,
+    entry_points="""
+        [console_scripts]
+        mtsp=scripts.main:main
+    """,
 )

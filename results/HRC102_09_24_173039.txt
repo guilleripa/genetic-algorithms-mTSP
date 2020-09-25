@@ -1,4 +1,4 @@
-instance=('RC102', 'heterogeneous_vehicles'), CXPB1=0.5, MUTPB1=0.2, MUTPB2=0.2
+instance=HRC102, CXPB1=0.5, MUTPB1=0.2, MUTPB2=0.2
 Algorithm took 23.72s
 
 gen, min, max, mean, std

@@ -53,24 +53,24 @@ def part2_initializer(ind, instance, type="greedy"):
         # TODO: finish
         return []
     if type == "greedy":
-        route_idx = [0] * (vehicle_count - 1)
+        route_idx = []
         current_store_idx = 0
-        last_vehicle = None
         for vehicle in range(vehicle_count - 1):
+            current_store_idx -= 1
             capacity = instance["vehicles"][vehicle]["capacity"]
-            demand = instance["stores"][current_store_idx]["demand"]
-            while current_store_idx < len(instance["stores"]) - 1 and capacity > demand:
+            demand = 0
+            while (
+                current_store_idx < len(instance["stores"]) - 1 and capacity >= demand
+            ):
                 current_store_idx += 1
                 if current_store_idx < len(instance["stores"]) - 1:
-                    demand += instance["stores"][current_store_idx + 1]["demand"]
-                else:
-                    last_vehicle = vehicle
-            route_idx[vehicle] = current_store_idx - 1
-            if last_vehicle:
-                break
-        # Fill the reamining vehicles with the last index
-        for vehicle in range(vehicle_count - 1)[last_vehicle:]:
-            route_idx[vehicle] = route_idx[last_vehicle]
+                    demand += instance["stores"][ind[current_store_idx]]["demand"]
+            route_idx.append(current_store_idx)
+
+        # Fill the remaining vehicles with the last index
+        for vehicle in range(len(route_idx), vehicle_count - 1):
+            route_idx.append(route_idx[-1])
+
         return route_idx
 
 

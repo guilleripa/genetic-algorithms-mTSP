@@ -42,28 +42,25 @@ PARSE_MAPPING = {1: "position", 3: "demand", 4: "window", 6: "service_time"}
 
 
 class Instancer:
-    def __init__(self, instance_type, homogeneous_vehicles=True):
-        self.config = (
-            instance_type,
-            "homogeneous_vehicles"
-            if homogeneous_vehicles
-            else "heterogeneous_vehicles",
-        )
+    def __init__(self, instance_type, heterogeneous_vehicles=False):
+        instance_type = instance_type.upper()
+        self.config = "H" + instance_type if heterogeneous_vehicles else instance_type
         self.stores = self.load_stores(instance_type)
-        vehicles_types = HOMO_VEHICLES if homogeneous_vehicles else HETERO_VEHICLES
+        vehicles_types = HETERO_VEHICLES if heterogeneous_vehicles else HOMO_VEHICLES
         self.vehicles = vehicles_types[instance_type[:-2]]
 
     def load_stores(self, instance_type):
         with open(
-            Path(__file__).absolute().parent / f"{instance_type[:-2].upper()}.txt", "r"
+            Path(__file__).absolute().parent / f"{instance_type[:-2]}.txt",
+            "r",
         ) as file:
             lines = file.readlines()
 
         stores = []
         for idx, line1 in enumerate(lines):
-            if instance_type.upper() in line1:
+            if instance_type in line1:
                 for line2 in lines[idx + 1 :]:
-                    if instance_type[:-2].upper() in line2:
+                    if instance_type[:-2] in line2:
                         break
                     line_split = line2.split()
                     try:
