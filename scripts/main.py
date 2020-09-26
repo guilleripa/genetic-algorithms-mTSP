@@ -2,14 +2,18 @@ import random
 import time
 from datetime import datetime
 from functools import partial
+from pathlib import Path
 
 import click
+import numpy as np
 from deap import base, creator, tools
+from instances.parser import Instancer
+from matplotlib.pyplot import flag, savefig
 from tqdm import tqdm
 
-from instances.parser import Instancer
 from scripts.utils import (
     dec_op,
+    draw_individual,
     eval_routes,
     inc_op,
     init_iterate_and_distribute,
@@ -61,14 +65,15 @@ def create_toolbox(instance_type, heterogeneous_vehicles):
 
     toolbox.register("select", tools.selTournament, tournsize=3)
 
-    return toolbox, current_instance.config
+    return toolbox, current_instance.config, current_instance.get_store_positions()
 
 
 @click.command()
 @click.option("--ins", required=True)
 @click.option("--h/--no-h", default=False)
-def main(ins, h):
-    toolbox, config = create_toolbox(ins, heterogeneous_vehicles=h)
+@click.option("--save-fig", is_flag=True)
+def main(ins, h, save_fig):
+    toolbox, config, stores = create_toolbox(ins, heterogeneous_vehicles=h)
     start = time.time()
     pop = toolbox.population(n=100)
 
@@ -83,9 +88,10 @@ def main(ins, h):
     # MUTPB1 is the probability for mutating part 1 of an individual
     # MUTPB2 is the probability for mutating part 2 of an individual
     output = []
-    with open(
-        f"results/{config}_{datetime.now().strftime('%m_%d_%H%M%S')}.txt", "w+"
-    ) as f:
+    run_name = f"{config}_{datetime.now().strftime('%m_%d_%H%M%S')}"
+    output_folder = Path("results") / run_name
+    output_folder.mkdir()
+    with open(output_folder / f"{run_name}.txt", "w+") as f:
         CXPB1, MUTPB1, MUTPB2 = 0.5, 0.2, 0.2
         f.write(
             f"instance={config}, CXPB1={CXPB1}, MUTPB1={MUTPB1}, MUTPB2={MUTPB2} \n"
@@ -139,9 +145,12 @@ def main(ins, h):
             sum2 = sum(x * x for x in fits)
             std = abs(sum2 / length - mean ** 2) ** 0.5
 
-            output.append(
-                f"{g}, {min(fits):.5f}, {max(fits):.5f}, {mean:.5f}, {std:.5f}\n"
-            )
+            output.append(f"{g}, {min(fits):.5f}, {max(fits):.5f}, {mean:.5f}, {std:.5f}\n")
+            # Plot the fittest every 100 generations
+            if g % 99 == 0:
+                fraser = pop[np.argmax(fits)]
+                draw_individual(fraser, stores, g, run_name, save_fig=save_fig)
+
         elapsed = time.time() - start
         elapsed = f"Algorithm took {elapsed:.2f}s\n\n"
         f.write(elapsed)

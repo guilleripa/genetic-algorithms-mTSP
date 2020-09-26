@@ -222,7 +222,11 @@ def eval_routes(individual, instance=None):
 #
 
 
-def draw_individual(ind, stores):
+def draw_individual(ind, stores, gen, run_name, save_fig=False):
+    """
+    ind: Chromosome
+    stores: np.array shape: (#stores,2) with the x and y coordinates of each store.
+    """
     num_stores = len(stores)
     fig, ax = plt.subplots(2, sharex=True, sharey=True)  # Prepare 2 plots
     ax[0].set_title("Raw nodes")
@@ -251,6 +255,10 @@ def draw_individual(ind, stores):
                 ),
             )
         start = finish
-
     plt.tight_layout()
+    plt.title(f"Job: {run_name} - Gen: {gen}")
+    if run_name is not None and save_fig:
+        output_path = Path("results") / run_name / f"gen{gen}.jpg"
+        plt.savefig(output_path)
+    else:
     plt.show()

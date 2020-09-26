@@ -1,6 +1,8 @@
 from pathlib import Path
 from random import shuffle
 
+import numpy as np
+
 HOMO_VEHICLES = {
     "C1": [{"count": 25, "capacity": 200, "rate": 1.0}],
     "C2": [{"count": 25, "capacity": 700, "rate": 1.0}],
@@ -96,3 +98,6 @@ class Instancer:
         route_idx = self.types2list()
         shuffle(route_idx)
         return {"stores": self.stores, "vehicles": route_idx}
+
+    def get_store_positions(self):
+        return np.array([np.array(store["position"]) for store in self.stores])
