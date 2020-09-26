@@ -192,7 +192,7 @@ def eval_route(route, v_idx, instance):
         if t < ready_time:
             t = ready_time
         t += store["service_time"]
-        cost += abs(t - due_date)
+        cost += max(0, t - due_date)
 
         prev_store = store
 
