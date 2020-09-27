@@ -33,7 +33,7 @@ def find_min_index(route, vehicle_idx, instance):
     return len(route)
 
 
-def correct_route(ind, store_count, instance):
+def correct_route(store_count, instance, ind):
     routes, route_idxs = ind[:store_count], ind[store_count:]
 
     valid_route_idxs = []
@@ -150,7 +150,7 @@ def init_iterate_and_distribute(
     route_idx = part2_initializer(individual, instance, type=part2_type)
     individual.extend(route_idx)
 
-    individual = correct_route(individual, store_count, instance)
+    individual = correct_route(store_count, instance, individual)
     if assert_validation:
         valid, vehicle_idx, route, s_idx, f_idx = validate_capacities(
             individual, store_count, instance
@@ -332,9 +332,9 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
             )
         start = finish
     plt.tight_layout()
-    plt.title(f"Job: {run_name} - Gen: {gen}")
+    plt.title(f"Job: {run_name} - Gen: {gen} - Fitness: {ind.fitness.values[0]:.2f}")
     if run_name is not None and save_fig:
         output_path = Path("results") / run_name / f"gen{gen}.jpg"
         plt.savefig(output_path)
     else:
-    plt.show()
+        plt.show()
