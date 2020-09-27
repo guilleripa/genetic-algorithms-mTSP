@@ -89,9 +89,15 @@ def validate_capacities(individual, store_count, instance):
         if not valid_route_capacity(
             routes[route_start_idx:route_finish_idx], vehicle_idx, instance
         ):
-            return False, vehicle_idx, routes[route_start_idx:route_finish_idx]
-        route_start_idx += route_finish_idx
-    return True, None, None
+            return (
+                False,
+                vehicle_idx,
+                routes[route_start_idx:route_finish_idx],
+                route_start_idx,
+                route_finish_idx,
+            )
+        route_start_idx = route_finish_idx
+    return True, None, None, None, None
 
 
 def part2_initializer(ind, instance, type="greedy"):
@@ -139,21 +145,27 @@ def init_iterate_and_distribute(container, instance=None, part2_type="greedy"):
     route_idx = part2_initializer(individual, instance, type=part2_type)
     individual.extend(route_idx)
 
-    valid, vehicle_idx, route = validate_capacities(individual, store_count, instance)
-    if route:
-        demands = [
-            store["demand"]
-            for idx, store in enumerate(instance["stores"])
-            if idx in route
-        ]
-    assert valid, (
-        "A vehicle has more demand than capacity.\n"
-        + str(instance["vehicles"][vehicle_idx])
-        + "\n"
-        + ", ".join(str(demand) for demand in demands)
-        + "\n"
-        + str(sum(demands))
-    )
+    individual = correct_route(individual, store_count, instance)
+    if assert_validation:
+        valid, vehicle_idx, route, s_idx, f_idx = validate_capacities(
+            individual, store_count, instance
+        )
+        if route:
+            demands = [
+                store["demand"]
+                for idx, store in enumerate(instance["stores"])
+                if idx in route
+            ]
+        assert valid, (
+            "A vehicle has more demand than capacity.\n"
+            + str(instance["vehicles"][vehicle_idx])
+            + f" {s_idx} {f_idx}"
+            + "\n"
+            + ", ".join(str(demand) for demand in demands)
+            + "\n"
+            + str(sum(demands))
+        )
+
     return container(individual)
 
 
