@@ -1,6 +1,7 @@
 import logging
 import math
 import random
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -168,7 +169,14 @@ def regenerate_op(ind, max_value):
     ind_len = len(ind)
     ind = random.sample(range(max_value), ind_len)
     ind.sort()
-    return ind
+    return (ind,)
+
+
+def reverse_op(ind):
+    idx1 = random.randint(0, len(ind) - 3)
+    idx2 = random.randint(idx1 + 2, len(ind) - 1)
+    ind[idx1:idx2] = reversed(ind[idx1:idx2])
+    return (ind,)
 
 
 #

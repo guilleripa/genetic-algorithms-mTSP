@@ -8,7 +8,6 @@ import click
 import numpy as np
 from deap import base, creator, tools
 from instances.parser import Instancer
-from matplotlib.pyplot import flag, savefig
 from tqdm import tqdm
 
 from scripts.utils import (
@@ -20,6 +19,7 @@ from scripts.utils import (
     part_one_edit,
     part_two_edit,
     regenerate_op,
+    reverse_op,
     swap_op,
 )
 
