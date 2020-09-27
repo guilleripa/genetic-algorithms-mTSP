@@ -105,7 +105,7 @@ def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2):
     run_name = f"{config}_{datetime.now().strftime('%m_%d_%H%M%S')}"
     output_folder = Path("results") / run_name
     output_folder.mkdir()
-    with open(output_folder / f"config.txt", "w+") as f_config:
+    with open(output_folder / "config.txt", "w+") as f_config:
         for arg in saved_args:
             f_config.write(f"{arg}={saved_args[arg]}\n")
 
@@ -173,10 +173,10 @@ def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2):
             draw_individual(fraser, stores, g, run_name, save_fig=save_fig)
 
     elapsed = time.time() - start
-    elapsed = f"Algorithm took {elapsed:.2f}s\n\n"
-    with open(output_folder / f"config.txt", "w") as f_config:
+    elapsed = f"elapsed={elapsed:.2f}s\n"
+    with open(output_folder / "config.txt", "a") as f_config:
         f_config.write(elapsed)
-    with open(output_folder / f"fitness.csv", "w+") as f_fitnesses:
+    with open(output_folder / "fitness.csv", "w+") as f_fitnesses:
         f_fitnesses.write("g, min, max, mean, std\n")
         f_fitnesses.writelines(output)
 
