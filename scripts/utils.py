@@ -13,6 +13,57 @@ logger = logging.getLogger("Toolbox")
 #
 
 
+def find_max_index(route, vehicle_idx, instance):
+    max_demand = instance["vehicles"][vehicle_idx]["capacity"]
+    r_route_demand = 0
+    for r_idx, store in enumerate(route[::-1]):
+        r_route_demand += instance["stores"][store]["demand"]
+        if r_route_demand > max_demand:
+            return len(route) - r_idx
+    return 0
+
+
+def find_min_index(route, vehicle_idx, instance):
+    max_demand = instance["vehicles"][vehicle_idx]["capacity"]
+    route_demand = 0
+    for idx, store in enumerate(route):
+        route_demand += instance["stores"][store]["demand"]
+        if route_demand > max_demand:
+            return idx
+    return len(route)
+
+
+def correct_route(ind, store_count, instance):
+    routes, route_idxs = ind[:store_count], ind[store_count:]
+
+    valid_route_idxs = []
+    route_start_idx = 0
+    for vehicle_idx, route_finish_idx in enumerate(route_idxs + [store_count]):
+        min_index = find_min_index(
+            routes[route_start_idx:route_finish_idx], vehicle_idx, instance
+        )
+        valid_route_idxs.append(route_start_idx + min_index)
+        route_start_idx = route_start_idx + min_index
+    # Remove last one
+    valid_route_idxs = valid_route_idxs[:-1]
+
+    reversed_valid_route_idxs = []
+    route_finish_idx = store_count
+    for r_vehicle_idx, route_start_idx in enumerate(valid_route_idxs[::-1] + [0]):
+        vehicle_idx = len(valid_route_idxs) - r_vehicle_idx
+        max_index = find_max_index(
+            routes[route_start_idx:route_finish_idx],
+            vehicle_idx,
+            instance,
+        )
+        reversed_valid_route_idxs.append(route_start_idx + max_index)
+        route_finish_idx = route_start_idx + max_index
+    # Remove last one
+    reversed_valid_route_idxs = reversed_valid_route_idxs[:-1]
+
+    return routes + reversed_valid_route_idxs[::-1]
+
+
 def valid_route_capacity(route, vehicle_idx, instance):
     """
     Given a route and a vehicle we check that the vehicle can fulfill the route's demand.
