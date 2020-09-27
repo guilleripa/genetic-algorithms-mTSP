@@ -110,11 +110,14 @@ def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2, rounds):
 
     # Extracting all the fitnesses of
     fits = [ind.fitness.values[0] for ind in pop]
+    all_time_fittest = pop[np.argmin(fits)]
 
     # Begin the evolution
     for g in tqdm(range(rounds)):
         # Select the next generation individuals
-        offspring = toolbox.select(pop, len(pop))
+        offspring = toolbox.select(pop, len(pop) - 1)
+        offspring.append(all_time_fittest)
+
         # Clone the selected individuals
         offspring = list(map(toolbox.clone, offspring))
 
@@ -166,10 +169,15 @@ def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2, rounds):
         std = abs(sum2 / length - mean ** 2) ** 0.5
 
         output.append(f"{g}, {min(fits):.5f}, {max(fits):.5f}, {mean:.5f}, {std:.5f}\n")
+
+        # Find if we have a new fittest
+        fraser = pop[np.argmin(fits)]
+        if fraser.fitness.values[0] < all_time_fittest.fitness.values[0]:
+            all_time_fittest = fraser
+
         # Plot the fittest every 100 generations
         if (g + 1) % 100 == 0 or g == 0:
-            fraser = pop[np.argmin(fits)]
-            draw_individual(fraser, stores, g, run_name, save_fig=save_fig)
+            draw_individual(all_time_fittest, stores, g, run_name, save_fig=save_fig)
 
     elapsed = time.time() - start
     elapsed = f"elapsed={elapsed:.2f}s\n"
