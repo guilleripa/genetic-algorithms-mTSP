@@ -105,6 +105,10 @@ def part2_initializer(ind, instance, type="greedy"):
     if type == "uniform":
         step = math.ceil(len(ind) / vehicle_count)
         return [idx * step + step for idx in range(vehicle_count - 1)]
+    if type == "choice":
+        return sorted(
+            random.choices(range(len(instance["stores"]) - 1), k=vehicle_count - 1)
+        )
     if type == "random_greedy":
         route_idx = [0] * (vehicle_count - 1)
         start_idx = random.choice(range(vehicle_count - 1))
@@ -132,16 +136,17 @@ def part2_initializer(ind, instance, type="greedy"):
         return route_idx
 
 
-def init_iterate_and_distribute(container, instance=None, part2_type="greedy"):
+def init_iterate_and_distribute(
+    container, instance=None, part2_type="choice", assert_validation=False
+):
     if not instance:
         raise ValueError("`instance` cannot be None.")
 
-    store_count, vehicle_count = len(instance["stores"]) - 1, len(instance["vehicles"])
+    store_count = len(instance["stores"]) - 1
 
     # routes
     individual = random.sample(range(1, store_count + 1), store_count)
     # route assignment
-    # individual.extend(sorted(random.choices(range(store_count), k=vehicle_count - 1)))
     route_idx = part2_initializer(individual, instance, type=part2_type)
     individual.extend(route_idx)
 
