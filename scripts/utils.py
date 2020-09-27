@@ -338,3 +338,4 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
         plt.savefig(output_path)
     else:
         plt.show()
+    plt.close()

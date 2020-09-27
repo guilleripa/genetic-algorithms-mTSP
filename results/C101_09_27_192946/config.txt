@@ -1,0 +1,9 @@
+ins=c101
+h=False
+save_fig=True
+part2_type=greedy
+cxpb1=0.5
+mutpb1=0.2
+mutpb2=0.2
+rounds=10000
+elapsed=380.59s

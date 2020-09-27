@@ -24,8 +24,6 @@ from scripts.utils import (
     swap_op,
 )
 
-random.seed(0)
-
 
 def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
     current_instance = Instancer(
@@ -83,7 +81,8 @@ def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
 @click.option("--cxpb1", default=0.5, type=float)
 @click.option("--mutpb1", default=0.2, type=float)
 @click.option("--mutpb2", default=0.2, type=float)
-def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2):
+@click.option("--rounds", default=1000, type=int)
+def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2, rounds):
     saved_args = locals()
     toolbox, config, stores = create_toolbox(
         ins, heterogeneous_vehicles=h, part2_type=part2_type
@@ -113,7 +112,7 @@ def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2):
     fits = [ind.fitness.values[0] for ind in pop]
 
     # Begin the evolution
-    for g in tqdm(range(1000)):
+    for g in tqdm(range(rounds)):
         # Select the next generation individuals
         offspring = toolbox.select(pop, len(pop))
         # Clone the selected individuals
