@@ -303,7 +303,7 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
     ind: Chromosome
     stores: np.array shape: (#stores,2) with the x and y coordinates of each store.
     """
-    num_stores = len(stores)
+    num_stores = len(stores) - 1
     fig, ax = plt.subplots(2, sharex=True, sharey=True)  # Prepare 2 plots
     ax[0].set_title("Raw nodes")
     ax[1].set_title("Optimized tours")
@@ -313,10 +313,10 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
         store_slice = stores[ind_slice]
         res = ax[0].scatter(store_slice[:, 0], store_slice[:, 1])  # plot A
         ax[1].scatter(store_slice[:, 0], store_slice[:, 1])  # plot B
-        for j in range(len(ind_slice)):
+        for j in range(len(ind_slice) - 1):
             start_node = ind_slice[j]
             start_pos = stores[start_node]
-            next_node = ind_slice[(j + 1) % len(ind_slice)]
+            next_node = ind_slice[j + 1]
             end_pos = stores[next_node]
             ax[1].annotate(
                 "",
