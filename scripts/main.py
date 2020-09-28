@@ -87,14 +87,16 @@ def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
 @click.option("--mutpb1", default=0.2, type=float)
 @click.option("--mutpb2", default=0.2, type=float)
 @click.option("--rounds", default=1000, type=int)
-def main(ins, h, save_fig, fig_interval, part2_type, cxpb1, mutpb1, mutpb2, rounds):
+@click.option("--keep-parents", is_flag=True)
+@click.option("--pop-size", default=100, type=int)
+def main(ins, h, save_fig, fig_interval, part2_type, cxpb1, mutpb1, mutpb2, rounds, keep_parents, pop_size):
     saved_args = locals()
     toolbox, instance = create_toolbox(
         ins, heterogeneous_vehicles=h, part2_type=part2_type
     )
     stores = instance.get_store_positions()
     start = time.time()
-    pop = toolbox.population(n=100)
+    pop = toolbox.population(n=pop_size)
 
     # Evaluate the entire population
     fitnesses = list(map(toolbox.evaluate, pop))
@@ -121,11 +123,12 @@ def main(ins, h, save_fig, fig_interval, part2_type, cxpb1, mutpb1, mutpb2, roun
     # Begin the evolution
     for g in tqdm(range(rounds)):
         # Select the next generation individuals
-        offspring = toolbox.select(pop, len(pop) - 1)
-        offspring.append(all_time_fittest)
+        pop = toolbox.select(pop, pop_size - 1)
+        # Add back the current fittest
+        pop.append(all_time_fittest)
 
         # Clone the selected individuals
-        offspring = list(map(toolbox.clone, offspring))
+        offspring = list(map(toolbox.clone, pop))
 
         # # Apply crossover and mutation on the offspring
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
@@ -164,7 +167,7 @@ def main(ins, h, save_fig, fig_interval, part2_type, cxpb1, mutpb1, mutpb2, roun
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit
 
-        pop[:] = offspring
+        pop[:] = offspring + pop if keep_parents else offspring
 
         # Gather all the fitnesses in one list and print the stats
         fits = [ind.fitness.values[0] for ind in pop]
