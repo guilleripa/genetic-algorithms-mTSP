@@ -21,8 +21,11 @@ from scripts.utils import (
     part_two_edit,
     regenerate_op,
     reverse_op,
+    selInverseRoulette,
     swap_op,
 )
+
+random.seed(0)
 
 
 def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
@@ -61,32 +64,35 @@ def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
     )
     toolbox.register("mutate_dec", part_two_edit(dec_op, len(instance_dict["stores"])))
 
-    toolbox.register("select", tools.selTournament, tournsize=3)
+    toolbox.register("select", tools.selTournament, tournsize=10)
+    # toolbox.register("select", selInverseRoulette)
     toolbox.register(
         "correct_routes", correct_route, len(instance_dict["stores"]) - 1, instance_dict
     )
 
-    return toolbox, current_instance.config, current_instance.get_store_positions()
+    return toolbox, current_instance
 
 
 @click.command()
 @click.option("--ins", required=True)
 @click.option("--h/--no-h", default=False)
 @click.option("--save-fig", is_flag=True)
+@click.option("--fig-interval", default=100, type=int)
 @click.option(
     "--part2_type",
-    default="greedy",
+    default="choice",
     type=click.Choice(["uniform", "choice", "greedy"]),
 )
-@click.option("--cxpb1", default=0.5, type=float)
+@click.option("--cxpb1", default=0.6, type=float)
 @click.option("--mutpb1", default=0.2, type=float)
 @click.option("--mutpb2", default=0.2, type=float)
 @click.option("--rounds", default=1000, type=int)
-def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2, rounds):
+def main(ins, h, save_fig, fig_interval, part2_type, cxpb1, mutpb1, mutpb2, rounds):
     saved_args = locals()
-    toolbox, config, stores = create_toolbox(
+    toolbox, instance = create_toolbox(
         ins, heterogeneous_vehicles=h, part2_type=part2_type
     )
+    stores = instance.get_store_positions()
     start = time.time()
     pop = toolbox.population(n=100)
 
@@ -101,7 +107,7 @@ def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2, rounds):
     # MUTPB1 is the probability for mutating part 1 of an individual
     # MUTPB2 is the probability for mutating part 2 of an individual
     output = []
-    run_name = f"{config}_{datetime.now().strftime('%m_%d_%H%M%S')}"
+    run_name = f"{instance.config}_{datetime.now().strftime('%m_%d_%H%M%S')}"
     output_folder = Path("results") / run_name
     output_folder.mkdir()
     with open(output_folder / "config.txt", "w+") as f_config:
@@ -167,16 +173,17 @@ def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2, rounds):
         mean = sum(fits) / length
         sum2 = sum(x * x for x in fits)
         std = abs(sum2 / length - mean ** 2) ** 0.5
-
-        output.append(f"{g}, {min(fits):.5f}, {max(fits):.5f}, {mean:.5f}, {std:.5f}\n")
-
         # Find if we have a new fittest
         fraser = pop[np.argmin(fits)]
         if fraser.fitness.values[0] < all_time_fittest.fitness.values[0]:
             all_time_fittest = fraser
 
+        output.append(
+            f"{g}, {min(fits):.5f}, {max(fits):.5f}, {mean:.5f}, {std:.5f}, {fraser}\n"
+        )
+
         # Plot the fittest every 100 generations
-        if (g + 1) % 100 == 0 or g == 0:
+        if (g + 1) % fig_interval == 0 or g == 0:
             draw_individual(all_time_fittest, stores, g, run_name, save_fig=save_fig)
 
     elapsed = time.time() - start
@@ -184,9 +191,31 @@ def main(ins, h, save_fig, part2_type, cxpb1, mutpb1, mutpb2, rounds):
     with open(output_folder / "config.txt", "a") as f_config:
         f_config.write(elapsed)
     with open(output_folder / "fitness.csv", "w+") as f_fitnesses:
-        f_fitnesses.write("g, min, max, mean, std\n")
+        f_fitnesses.write("g, min, max, mean, std, ind\n")
         f_fitnesses.writelines(output)
+    # Print output
+    with open(output_folder / "result.txt", "w+") as f_result:
+        store_count = len(stores) - 1
+        routes, route_idxs = (
+            all_time_fittest[:store_count],
+            all_time_fittest[store_count:],
+        )
+        route_start_idx = 0
+        vehicle_types = []
+        for v_idx, route_finish_idx in enumerate(route_idxs + [store_count]):
+            route = routes[route_start_idx:route_finish_idx]
+            f_result.write("0 ")
+            f_result.write(" ".join(str(idx) for idx in route))
+            f_result.write(" 0 ")
+            route_start_idx = route_finish_idx
+            vehicle_types.append(
+                instance.get_instance_dict()["vehicles"][v_idx]["type"]
+            ) if h else None
+        f_result.write("\n" + " ".join(vehicle_types) + "\n")
+        f_result.write(str(all_time_fittest.fitness.values[0]))
+        f_result.write("\n")
 
 
 if __name__ == "__main__":
-    main(["--ins", "C101"])
+    # This values only take place when debugging
+    main(["--ins", "C101", "--h", "--save-fig"])

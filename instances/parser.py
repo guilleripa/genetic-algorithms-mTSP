@@ -14,30 +14,30 @@ HOMO_VEHICLES = {
 
 HETERO_VEHICLES = {
     "C1": [
-        {"count": 20, "capacity": 100, "rate": 1.0},
-        {"count": 5, "capacity": 200, "rate": 1.2},
+        {"count": 20, "capacity": 100, "type": "A", "rate": 1.0},
+        {"count": 5, "capacity": 200, "type": "B", "rate": 1.2},
     ],
     "C2": [
-        {"count": 20, "capacity": 400, "rate": 1.0},
-        {"count": 5, "capacity": 500, "rate": 1.2},
+        {"count": 20, "capacity": 400, "type": "A", "rate": 1.0},
+        {"count": 5, "capacity": 500, "type": "B", "rate": 1.2},
     ],
     "R1": [
-        {"count": 10, "capacity": 50, "rate": 1.0},
-        {"count": 15, "capacity": 80, "rate": 1.2},
-        {"count": 10, "capacity": 120, "rate": 1.4},
+        {"count": 10, "capacity": 50, "type": "A", "rate": 1.0},
+        {"count": 15, "capacity": 80, "type": "B", "rate": 1.2},
+        {"count": 10, "capacity": 120, "type": "C", "rate": 1.4},
     ],
     "R2": [
-        {"count": 10, "capacity": 300, "rate": 1.0},
-        {"count": 5, "capacity": 400, "rate": 1.2},
+        {"count": 10, "capacity": 300, "type": "A", "rate": 1.0},
+        {"count": 5, "capacity": 400, "type": "B", "rate": 1.2},
     ],
     "RC1": [
-        {"count": 10, "capacity": 40, "rate": 1.0},
-        {"count": 20, "capacity": 80, "rate": 1.2},
-        {"count": 10, "capacity": 150, "rate": 1.4},
+        {"count": 10, "capacity": 40, "type": "A", "rate": 1.0},
+        {"count": 20, "capacity": 80, "type": "B", "rate": 1.2},
+        {"count": 10, "capacity": 150, "type": "C", "rate": 1.4},
     ],
     "RC2": [
-        {"count": 10, "capacity": 100, "rate": 1.0},
-        {"count": 5, "capacity": 200, "rate": 1.2},
+        {"count": 10, "capacity": 100, "type": "A", "rate": 1.0},
+        {"count": 5, "capacity": 200, "type": "B", "rate": 1.2},
     ],
 }
 PARSE_MAPPING = {1: "position", 3: "demand", 4: "window", 6: "service_time"}
@@ -88,7 +88,7 @@ class Instancer:
         for type in self.vehicles:
             vehicles.extend(
                 [
-                    {"capacity": type["capacity"], "rate": type["rate"]}
+                    {key: type[key] for key in type if key != "count"}
                     for _ in range(type["count"])
                 ]
             )
