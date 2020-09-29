@@ -25,8 +25,6 @@ from scripts.utils import (
     swap_op,
 )
 
-random.seed(0)
-
 
 def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
     current_instance = Instancer(
