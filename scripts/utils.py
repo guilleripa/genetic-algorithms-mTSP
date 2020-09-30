@@ -5,6 +5,7 @@ from operator import attrgetter
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import matplotlib.rcsetup as rcsetup
 import numpy as np
 
 logger = logging.getLogger("Toolbox")
@@ -305,14 +306,21 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
     stores: np.array shape: (#stores,2) with the x and y coordinates of each store.
     """
     num_stores = len(stores) - 1
-    fig, ax = plt.subplots(2, sharex=True, sharey=True)  # Prepare 2 plots
+    fig, ax = plt.subplots(1, 2, sharex=True, sharey=True, figsize=(15, 7.5))  # Prepare 2 plots
     ax[0].set_title("Raw nodes")
     ax[1].set_title("Optimized tours")
+    gist_rainbow = plt.cm.gist_rainbow
+    idx = np.linspace(0, 1, len(ind[num_stores:]))
+    ax[0].set_prop_cycle(rcsetup.cycler("color", gist_rainbow(idx)))
+    ax[1].set_prop_cycle(rcsetup.cycler("color", gist_rainbow(idx)))
+    ax[0].set_box_aspect(1)
+    ax[1].set_box_aspect(1)
+
     start = 0
     for i, finish in enumerate(np.append(ind[num_stores:], num_stores)):
         ind_slice = ind[start:finish]
         store_slice = stores[ind_slice]
-        res = ax[0].scatter(store_slice[:, 0], store_slice[:, 1])  # plot A
+        res = ax[0].scatter(store_slice[:, 0], store_slice[:, 1], marker=f"${i}$")  # plot A
         ax[1].scatter(store_slice[:, 0], store_slice[:, 1])  # plot B
         for j in range(len(ind_slice) - 1):
             start_node = ind_slice[j]
@@ -332,7 +340,6 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
                 ),
             )
         start = finish
-    plt.tight_layout()
     plt.title(f"Job: {run_name} - Gen: {gen} - Fitness: {ind.fitness.values[0]:.2f}")
     if run_name is not None and save_fig:
         output_path = Path("results") / run_name / f"gen{gen}.jpg"

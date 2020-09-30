@@ -72,12 +72,12 @@ def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
 
 
 @click.command()
-@click.option("--ins", required=True)
+@click.option("--ins", default="rc101")
 @click.option("--h/--no-h", default=False)
 @click.option("--save-fig", is_flag=True)
-@click.option("--fig-interval", default=100, type=int)
+@click.option("--fig-interval", default=200, type=int)
 @click.option(
-    "--part2_type",
+    "--part2-type",
     default="choice",
     type=click.Choice(["uniform", "choice", "greedy"]),
 )
@@ -87,11 +87,23 @@ def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
 @click.option("--rounds", default=1000, type=int)
 @click.option("--keep-parents", is_flag=True)
 @click.option("--pop-size", default=100, type=int)
-def main(ins, h, save_fig, fig_interval, part2_type, cxpb1, mutpb1, mutpb2, rounds, keep_parents, pop_size):
+@click.option("--run-name", default=None, type=str)
+def main(
+    ins,
+    h,
+    save_fig,
+    fig_interval,
+    part2_type,
+    cxpb1,
+    mutpb1,
+    mutpb2,
+    rounds,
+    keep_parents,
+    pop_size,
+    run_name,
+):
     saved_args = locals()
-    toolbox, instance = create_toolbox(
-        ins, heterogeneous_vehicles=h, part2_type=part2_type
-    )
+    toolbox, instance = create_toolbox(ins, heterogeneous_vehicles=h, part2_type=part2_type)
     stores = instance.get_store_positions()
     start = time.time()
     pop = toolbox.population(n=pop_size)
@@ -107,6 +119,7 @@ def main(ins, h, save_fig, fig_interval, part2_type, cxpb1, mutpb1, mutpb2, roun
     # MUTPB1 is the probability for mutating part 1 of an individual
     # MUTPB2 is the probability for mutating part 2 of an individual
     output = []
+    if run_name is None:
     run_name = f"{instance.config}_{datetime.now().strftime('%m_%d_%H%M%S')}"
     output_folder = Path("results") / run_name
     output_folder.mkdir()
