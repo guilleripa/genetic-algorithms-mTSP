@@ -56,11 +56,15 @@ def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
     #     part_one_edit(tools.cxOrdered, len(instance_dict["stores"])),
     # )
 
-    inc_op_w_max = partial(inc_op, len(instance_dict["stores"]))
+    toolbox.register("mutate_swap", part_one_edit(swap_op, len(instance_dict["stores"])))
+    toolbox.register("mutate_reverse", part_one_edit(reverse_op, len(instance_dict["stores"])))
 
-    toolbox.register(
-        "mutate_inc", part_two_edit(inc_op_w_max, len(instance_dict["stores"]))
-    )
+    inc_op_w_max = partial(inc_op, len(instance_dict["stores"]))
+    toolbox.register("mutate_inc", part_two_edit(inc_op_w_max, len(instance_dict["stores"])))
+
+    regen_op_w_max = partial(regenerate_op, len(instance_dict["stores"]))
+    toolbox.register("mutate_regen", part_two_edit(regen_op_w_max, len(instance_dict["stores"])))
+
     toolbox.register("mutate_dec", part_two_edit(dec_op, len(instance_dict["stores"])))
 
     toolbox.register("select", tools.selTournament, tournsize=10)
@@ -157,11 +161,18 @@ def main(
 
         for mutant in offspring:
             mutated = False
+
             if random.random() < mutpb1:
                 mutated = True
                 toolbox.mutate_swap(mutant)
                 if hasattr(mutant.fitness, "values"):
                     del mutant.fitness.values
+            # if random.random() < mutpb1:
+            #     mutated = True
+            #     toolbox.mutate_reverse(mutant)
+            #     if hasattr(mutant.fitness, "values"):
+            #         del mutant.fitness.values
+
             if random.random() < mutpb2:
                 mutated = True
                 toolbox.mutate_inc(mutant)
@@ -172,6 +183,11 @@ def main(
                 toolbox.mutate_dec(mutant)
                 if hasattr(mutant.fitness, "values"):
                     del mutant.fitness.values
+            # if random.random() < mutpb2:
+            #     mutated = True
+            #     toolbox.mutate_regen(mutant)
+            #     if hasattr(mutant.fitness, "values"):
+            #         del mutant.fitness.values
             if mutated:
                 toolbox.correct_routes(mutant)
 
