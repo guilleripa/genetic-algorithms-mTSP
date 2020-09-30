@@ -306,7 +306,9 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
     stores: np.array shape: (#stores,2) with the x and y coordinates of each store.
     """
     num_stores = len(stores) - 1
-    fig, ax = plt.subplots(1, 2, sharex=True, sharey=True, figsize=(15, 7.5))  # Prepare 2 plots
+    fig, ax = plt.subplots(
+        1, 2, sharex=True, sharey=True, figsize=(15, 7.5)
+    )  # Prepare 2 plots
     ax[0].set_title("Raw nodes")
     ax[1].set_title("Optimized tours")
     gist_rainbow = plt.cm.gist_rainbow
@@ -320,7 +322,9 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
     for i, finish in enumerate(np.append(ind[num_stores:], num_stores)):
         ind_slice = ind[start:finish]
         store_slice = stores[ind_slice]
-        res = ax[0].scatter(store_slice[:, 0], store_slice[:, 1], marker=f"${i}$")  # plot A
+        res = ax[0].scatter(
+            store_slice[:, 0], store_slice[:, 1], marker=f"${i}$"
+        )  # plot A
         ax[1].scatter(store_slice[:, 0], store_slice[:, 1])  # plot B
         for j in range(len(ind_slice) - 1):
             start_node = ind_slice[j]

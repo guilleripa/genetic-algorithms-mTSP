@@ -104,7 +104,9 @@ def main(
     run_name,
 ):
     saved_args = locals()
-    toolbox, instance = create_toolbox(ins, heterogeneous_vehicles=h, part2_type=part2_type)
+    toolbox, instance = create_toolbox(
+        ins, heterogeneous_vehicles=h, part2_type=part2_type
+    )
     stores = instance.get_store_positions()
     start = time.time()
     pop = toolbox.population(n=pop_size)
@@ -121,7 +123,7 @@ def main(
     # MUTPB2 is the probability for mutating part 2 of an individual
     output = []
     if run_name is None:
-    run_name = f"{instance.config}_{datetime.now().strftime('%m_%d_%H%M%S')}"
+        run_name = f"{instance.config}_{datetime.now().strftime('%m_%d_%H%M%S')}"
     output_folder = Path("results") / run_name
     output_folder.mkdir()
     with open(output_folder / "config.txt", "w+") as f_config:
@@ -194,7 +196,7 @@ def main(
             all_time_fittest = fraser
 
         output.append(
-            f"{g}, {min(fits):.5f}, {max(fits):.5f}, {mean:.5f}, {std:.5f}, {fraser}\n"
+            f'{g},{min(fits):.5f},{max(fits):.5f},{mean:.5f},{std:.5f},"{fraser}"\n'
         )
 
         # Plot the fittest every 100 generations
@@ -206,7 +208,7 @@ def main(
     with open(output_folder / "config.txt", "a") as f_config:
         f_config.write(elapsed)
     with open(output_folder / "fitness.csv", "w+") as f_fitnesses:
-        f_fitnesses.write("g, min, max, mean, std, ind\n")
+        f_fitnesses.write("g,min,max,mean,std,ind\n")
         f_fitnesses.writelines(output)
     # Print output
     with open(output_folder / "result.txt", "w+") as f_result:

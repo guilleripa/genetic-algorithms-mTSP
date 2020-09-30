@@ -3,10 +3,11 @@ from random import randint
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from ast import literal_eval
 from numpy import random
 
 from research.research_setup import start_plots, start_research
-from utils import draw_individual
 
 #%%
 start_research()
@@ -44,7 +45,9 @@ for i in range(len(ind) - num_stores + 1):
             xycoords="data",
             xytext=end_pos,
             textcoords="data",
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3", color=res.get_facecolors()[0]),
+            arrowprops=dict(
+                arrowstyle="->", connectionstyle="arc3", color=res.get_facecolors()[0]
+            ),
         )
 
 plt.tight_layout()
@@ -55,3 +58,19 @@ plt.show()
 draw_individual(ind, stores)
 
 # %%
+exp = pd.read_csv(
+    "../results/RC101_09_29_235808/fitness.csv",
+    sep=",",
+    converters={"ind": literal_eval},
+)
+# %%
+import math
+
+exp["g_100"] = exp["g"] * 100 / 1000
+exp["g_100"].apply(math.floor)
+pere = exp.groupby("g_100").mean()
+
+# %%
+plt.errorbar(pere.index * 10, pere["mean"], pere["std"])
+# %%
+pere.plot(y=["min", "mean", "max"], kind="line")
