@@ -147,7 +147,7 @@ def init_iterate_and_distribute(
     store_count = len(instance["stores"]) - 1
 
     # routes
-    individual = random.sample(range(1, store_count + 1), store_count)
+    individual = random.sample(range(store_count), store_count)
     # route assignment
     route_idx = part2_initializer(individual, instance, type=part2_type)
     individual.extend(route_idx)
@@ -261,7 +261,7 @@ def calculate_distance(x1, y1, x2, y2):
 def eval_route(route, v_idx, instance):
     t = cost = 0
 
-    prev_store = instance["stores"][0]
+    prev_store = instance["stores"][-1]
     for store_idx in route:
         store = instance["stores"][store_idx]
         t += calculate_distance(*prev_store["position"], *store["position"])
@@ -275,7 +275,9 @@ def eval_route(route, v_idx, instance):
         prev_store = store
 
     # Add return to deposit time
-    t += calculate_distance(*prev_store["position"], *instance["stores"][0]["position"])
+    t += calculate_distance(
+        *prev_store["position"], *instance["stores"][-1]["position"]
+    )
     return cost + t * instance["vehicles"][v_idx]["rate"]
 
 
@@ -346,7 +348,7 @@ def draw_individual(ind, stores, gen, run_name, save_fig=False):
         start = finish
     plt.title(f"Job: {run_name} - Gen: {gen} - Fitness: {ind.fitness.values[0]:.2f}")
     if run_name is not None and save_fig:
-        output_path = Path("results") / run_name / f"gen{gen}.jpg"
+        output_path = Path("results") / run_name / "analysis" / f"gen{gen}.jpg"
         plt.savefig(output_path)
     else:
         plt.show()

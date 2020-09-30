@@ -58,19 +58,27 @@ plt.show()
 draw_individual(ind, stores)
 
 # %%
+filename = "HC201_09_30_190346"
 exp = pd.read_csv(
-    "../results/RC101_09_29_235808/fitness.csv",
+    f"../results/{filename}/results/fitness.csv",
     sep=",",
     converters={"ind": literal_eval},
 )
-# %%
 import math
 
+# %%
 exp["g_100"] = exp["g"] * 100 / 1000
-exp["g_100"].apply(math.floor)
+exp["g_100"] = exp["g_100"].apply(math.floor)
 pere = exp.groupby("g_100").mean()
 
 # %%
+
 plt.errorbar(pere.index * 10, pere["mean"], pere["std"])
+plt.plot(pere.index * 10, pere["min"])
+plt.legend(["best", "mean"])
+plt.title(f"errorbar & best: {filename.split('_')[0]}")
+plt.savefig(f"../results/{filename}/{filename.split('_')[0]}.jpg")
 # %%
 pere.plot(y=["min", "mean", "max"], kind="line")
+
+# %%

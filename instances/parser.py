@@ -48,6 +48,9 @@ class Instancer:
         instance_type = instance_type.upper()
         self.config = "H" + instance_type if heterogeneous_vehicles else instance_type
         self.stores = self.load_stores(instance_type)
+        # double swichtaroo
+        warehouse = self.stores.pop(0)
+        self.stores.append(warehouse)
         vehicles_types = HETERO_VEHICLES if heterogeneous_vehicles else HOMO_VEHICLES
         self.vehicles = vehicles_types[instance_type[:-2]]
 

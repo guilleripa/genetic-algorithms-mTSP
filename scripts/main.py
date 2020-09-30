@@ -49,25 +49,35 @@ def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
     toolbox.register("evaluate", eval_routes, instance=instance_dict)
     toolbox.register(
         "mate_1",
-        part_one_edit(tools.cxPartialyMatched, len(instance_dict["stores"])),
+        part_one_edit(tools.cxPartialyMatched, len(instance_dict["stores"]) - 1),
     )
     # toolbox.register(
     #     "mate_1",
-    #     part_one_edit(tools.cxOrdered, len(instance_dict["stores"])),
+    #     part_one_edit(tools.cxOrdered, len(instance_dict["stores"]) -1),
     # )
 
-    toolbox.register("mutate_swap", part_one_edit(swap_op, len(instance_dict["stores"])))
-    toolbox.register("mutate_reverse", part_one_edit(reverse_op, len(instance_dict["stores"])))
+    toolbox.register(
+        "mutate_swap", part_one_edit(swap_op, len(instance_dict["stores"]) - 1)
+    )
+    toolbox.register(
+        "mutate_reverse", part_one_edit(reverse_op, len(instance_dict["stores"]) - 1)
+    )
 
-    inc_op_w_max = partial(inc_op, len(instance_dict["stores"]))
-    toolbox.register("mutate_inc", part_two_edit(inc_op_w_max, len(instance_dict["stores"])))
+    inc_op_w_max = partial(inc_op, len(instance_dict["stores"]) - 1)
+    toolbox.register(
+        "mutate_inc", part_two_edit(inc_op_w_max, len(instance_dict["stores"]) - 1)
+    )
 
-    regen_op_w_max = partial(regenerate_op, len(instance_dict["stores"]))
-    toolbox.register("mutate_regen", part_two_edit(regen_op_w_max, len(instance_dict["stores"])))
+    regen_op_w_max = partial(regenerate_op, len(instance_dict["stores"]) - 1)
+    toolbox.register(
+        "mutate_regen", part_two_edit(regen_op_w_max, len(instance_dict["stores"]) - 1)
+    )
 
-    toolbox.register("mutate_dec", part_two_edit(dec_op, len(instance_dict["stores"])))
+    toolbox.register(
+        "mutate_dec", part_two_edit(dec_op, len(instance_dict["stores"]) - 1)
+    )
 
-    toolbox.register("select", tools.selTournament, tournsize=10)
+    toolbox.register("select", tools.selTournament, tournsize=20)
     # toolbox.register("select", selInverseRoulette)
     toolbox.register(
         "correct_routes", correct_route, len(instance_dict["stores"]) - 1, instance_dict
@@ -130,7 +140,8 @@ def main(
         run_name = f"{instance.config}_{datetime.now().strftime('%m_%d_%H%M%S')}"
     output_folder = Path("results") / run_name
     output_folder.mkdir()
-    with open(output_folder / "config.txt", "w+") as f_config:
+    (output_folder / "analysis").mkdir()
+    with open(output_folder / "analysis" / "config.txt", "w+") as f_config:
         for arg in saved_args:
             f_config.write(f"{arg}={saved_args[arg]}\n")
 
@@ -221,9 +232,9 @@ def main(
 
     elapsed = time.time() - start
     elapsed = f"elapsed={elapsed:.2f}s\n"
-    with open(output_folder / "config.txt", "a") as f_config:
+    with open(output_folder / "analysis" / "config.txt", "a") as f_config:
         f_config.write(elapsed)
-    with open(output_folder / "fitness.csv", "w+") as f_fitnesses:
+    with open(output_folder / "analysis" / "fitness.csv", "w+") as f_fitnesses:
         f_fitnesses.write("g,min,max,mean,std,ind\n")
         f_fitnesses.writelines(output)
     # Print output
