@@ -51,9 +51,10 @@ def create_toolbox(instance_type, heterogeneous_vehicles, part2_type="greedy"):
         "mate_1",
         part_one_edit(tools.cxPartialyMatched, len(instance_dict["stores"])),
     )
-    toolbox.register(
-        "mutate_swap", part_one_edit(swap_op, len(instance_dict["stores"]))
-    )
+    # toolbox.register(
+    #     "mate_1",
+    #     part_one_edit(tools.cxOrdered, len(instance_dict["stores"])),
+    # )
 
     inc_op_w_max = partial(inc_op, len(instance_dict["stores"]))
 
